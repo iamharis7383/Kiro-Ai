@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiro AI - Smart Workspace</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kiro: {
+                            50: '#F5F3FF',
+                            100: '#EDE9FE',
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased h-screen flex overflow-hidden">
+
+    <!-- ================= AUTH VIEW (Login / Signup) ================= -->
+    <div id="authView" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <!-- Brand Header -->
+            <div class="text-center mb-6">
+                <div class="w-10 h-10 bg-kiro-600 rounded-lg mx-auto flex items-center justify-center text-white font-bold text-xl shadow-sm mb-2">K</div>
+                <h1 class="text-xl font-bold text-gray-900 tracking-tight">Kiro AI</h1>
+                <p id="authSubtitle" class="text-xs text-gray-500 mt-1">Sign in to your account</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex bg-gray-100 p-1 rounded-lg mb-5 text-xs font-medium">
+                <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-1.5 rounded-md bg-white text-gray-900 shadow-sm transition-all">Sign In</button>
+                <button id="tabSignup" onclick="switchAuthTab('signup')" class="flex-1 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all">Sign Up</button>
+            </div>
+
+            <!-- Form -->
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                <div id="nameFieldContainer" class="hidden">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="authName" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-kiro-600 focus:border-kiro-600" placeholder="Alex Morgan">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-kiro-600 focus:border-kiro-600" placeholder="alex@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="authPassword" required class="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-kiro-600 focus:border-kiro-600" placeholder="••••••••">
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="w-full mt-2 bg-kiro-600 hover:bg-kiro-700 text-white font-medium py-2 rounded-lg text-xs transition-colors shadow-sm flex items-center justify-center space-x-2">
+                    <span id="authBtnText">Sign In</span>
+                    <span id="authLoader" class="hidden w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                </button>
+            </form>
+
+            <div class="relative my-4 text-center">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
+                <span class="relative bg-white px-2 text-[10px] text-gray-400 uppercase">Or continue with</span>
+            </div>
+
+            <button onclick="instantLogin()" class="w-full border border-gray-200 hover:bg-gray-50 py-1.5 rounded-lg text-xs font-medium text-gray-700 flex items-center justify-center space-x-2 transition-colors">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Demo Instant Access</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP LAYOUT (Narrow & Compact) ================= -->
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col justify-between transition-all duration-300">
+        <div>
+            <!-- Sidebar Header -->
+            <div class="p-3 flex items-center justify-between border-b border-gray-200">
+                <button onclick="newChat()" class="flex-1 bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 text-xs font-medium py-1.5 px-3 rounded-lg flex items-center justify-between shadow-sm transition-colors">
+                    <span class="flex items-center space-x-2">
+                        <div class="w-4 h-4 bg-kiro-600 rounded flex items-center justify-center text-white text-[10px] font-bold">K</div>
+                        <span>New chat</span>
+                    </span>
+                    <i data-lucide="square-pen" class="w-3.5 h-3.5 text-gray-500"></i>
+                </button>
+                <button onclick="toggleSidebar()" class="ml-2 p-1.5 text-gray-500 hover:bg-gray-200 rounded-lg">
+                    <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Chat History List -->
+            <div class="p-2 space-y-1 overflow-y-auto max-h-[calc(100vh-130px)] text-xs">
+                <div class="text-[10px] font-semibold text-gray-400 px-2 py-1 uppercase tracking-wider">Recent chats</div>
+                <div onclick="switchChat(1)" class="group flex items-center justify-between p-2 hover:bg-gray-200/60 rounded-lg cursor-pointer bg-gray-200/50 text-gray-900 font-medium">
+                    <span class="truncate">Python API integration</span>
+                    <i data-lucide="more-horizontal" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100"></i>
+                </div>
+                <div onclick="switchChat(2)" class="group flex items-center justify-between p-2 hover:bg-gray-200/60 rounded-lg cursor-pointer text-gray-600">
+                    <span class="truncate">UI Dashboard Wireframe</span>
+                    <i data-lucide="more-horizontal" class="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer (User Profile) -->
+        <div class="p-3 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-7 h-7 bg-kiq-100 bg-kiro-100 text-kiro-700 font-bold rounded-full flex items-center justify-center text-xs">AM</div>
+                <div>
+                    <div id="userNameDisplay" class="text-xs font-semibold text-gray-800">Alex Morgan</div>
+                    <div class="text-[10px] text-gray-500">Free Plan</div>
+                </div>
+            </div>
+            <button onclick="openSettings()" class="p-1.5 text-gray-500 hover:bg-gray-200 rounded-lg">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Chat Workspace -->
+    <main class="flex-1 flex flex-col bg-white relative">
+        <!-- Top Navigation Bar -->
+        <header class="h-12 border-b border-gray-200 px-4 flex items-center justify-between bg-white z-10">
+            <div class="flex items-center space-x-2">
+                <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg hidden">
+                    <i data-lucide="panel-left-open" class="w-4 h-4"></i>
+                </button>
+                <!-- Model Selector Dropdown -->
+                <div class="relative">
+                    <button onclick="toggleModelDropdown()" class="flex items-center space-x-1.5 text-xs font-semibold text-gray-800 hover:bg-gray-100 px-2.5 py-1 rounded-lg transition-colors">
+                        <span id="currentModelName">Kiro 3.5 Flash</span>
+                        <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500"></i>
+                    </button>
+                    <div id="modelDropdown" class="hidden absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-20 text-xs">
+                        <div onclick="selectModel('Kiro 3.5 Flash')" class="px-3 py-1.5 hover:bg-gray-100 cursor-pointer flex items-center justify-between"><span>Kiro 3.5 Flash</span><span class="text-[10px] text-gray-400">Fast</span></div>
+                        <div onclick="selectModel('Kiro Pro Reasoning')" class="px-3 py-1.5 hover:bg-gray-100 cursor-pointer flex items-center justify-between"><span>Kiro Pro Reasoning</span><span class="text-[10px] text-kiro-600">Smart</span></div>
+                        <div onclick="selectModel('Grok-Speed Turbo')" class="px-3 py-1.5 hover:bg-gray-100 cursor-pointer flex items-center justify-between"><span>Grok-Speed Turbo</span><span class="text-[10px] text-gray-400">Live</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mode Selector Pills -->
+            <div class="hidden sm:flex items-center space-x-1 bg-gray-100 p-1 rounded-lg text-[11px]">
+                <button onclick="setMode('standard')" id="modeStandard" class="px-2 py-0.5 rounded-md bg-white font-medium text-gray-800 shadow-sm">Standard</button>
+                <button onclick="setMode('deep')" id="modeDeep" class="px-2 py-0.5 rounded-md text-gray-600 hover:text-gray-900">Deep Think</button>
+                <button onclick="setMode('creative')" id="modeCreative" class="px-2 py-0.5 rounded-md text-gray-600 hover:text-gray-900">Creative</button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="triggerNewWorkspace('flow')" class="text-xs border border-gray-200 hover:bg-gray-100 px-2.5 py-1 rounded-lg font-medium text-gray-700 flex items-center space-x-1">
+                    <i data-lucide="git-merge" class="w-3 h-3 text-kiro-600"></i>
+                    <span>Flow</span>
+                </button>
+                <button onclick="triggerNewWorkspace('vision')" class="text-xs border border-gray-200 hover:bg-gray-100 px-2.5 py-1 rounded-lg font-medium text-gray-700 flex items-center space-x-1">
+                    <i data-lucide="image" class="w-3 h-3 text-kiro-600"></i>
+                    <span>Vision</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Chat Messages Scroll Area (Narrower Max-Width container) -->
+        <div id="chatScrollArea" class="flex-1 overflow-y-auto px-4 py-6 space-y-5 flex flex-col items-center">
+            
+            <!-- Welcome / Empty State (No suggestions as requested) -->
+            <div id="welcomeState" class="w-full max-w-xl text-center my-auto space-y-3">
+                <div class="w-12 h-12 bg-kiro-600 rounded-xl mx-auto flex items-center justify-center text-white font-bold text-2xl shadow-sm">K</div>
+                <h2 class="text-lg font-semibold text-gray-900 tracking-tight">What can I help with today?</h2>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesList" class="w-full max-w-xl space-y-5 hidden"></div>
+        </div>
+
+        <!-- Chat Input Area (Narrower max-w-xl container) -->
+        <div class="p-4 bg-white border-t border-gray-100 flex justify-center">
+            <div class="w-full max-w-xl relative bg-white border border-gray-200 rounded-xl shadow-sm focus-within:ring-1 focus-within:ring-kiro-600 focus-within:border-kiro-600">
+                <textarea id="userInput" rows="1" oninput="autoResizeTextarea(this)" onkeydown="handleKeyDown(event)" placeholder="Message Kiro AI..." class="w-full pl-3 pr-20 py-2.5 text-xs bg-transparent focus:outline-none resize-none max-h-32 text-gray-800 placeholder-gray-400"></textarea>
+                
+                <div class="absolute right-2 bottom-2 flex items-center space-x-1.5">
+                    <button onclick="attachFile()" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="paperclip" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="sendMessage()" id="sendBtn" class="p-1.5 bg-kiro-600 hover:bg-kiro-700 text-white rounded-lg transition-colors shadow-sm">
+                        <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= SETTINGS MODAL ================= -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white border border-gray-200 rounded-xl p-5 shadow-lg">
+            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
+                <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">Kiro Settings & API Config</h3>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" value="AQ.Ab8RN6L0qCVRa2g_oJreuPwxUwtjt4a0z-egYmauusDWFXQCsw" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-kiro-600 font-mono text-[11px]">
+                    <p class="text-[10px] text-gray-400 mt-1">Key is pre-configured and ready for API requests.</p>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Default Persona Mode</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-kiro-600">
+                        <option>General Assistant</option>
+                        <option>Expert Developer</option>
+                        <option>Creative Writer</option>
+                        <option>Data Analyst</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-gray-100 flex justify-end space-x-2">
+                <button onclick="closeSettings()" class="px-3 py-1.5 border border-gray-200 hover:bg-gray-100 rounded-lg text-xs font-medium">Cancel</button>
+                <button onclick="saveSettings()" class="px-3 py-1.5 bg-kiro-600 hover:bg-kiro-700 text-white rounded-lg text-xs font-medium shadow-sm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= WORKSPACE MODAL (Flow / Vision) ================= -->
+    <div id="workspaceModal" class="hidden fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-white border border-gray-200 rounded-xl p-5 shadow-lg">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                <h3 id="workspaceTitle" class="text-xs font-bold text-gray-900 uppercase tracking-wider">Kiro Flow Workspace</h3>
+                <button onclick="closeWorkspace()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div id="workspaceContent" class="py-4 text-xs text-gray-600">
+                <!-- Dynamic content inserted via JS -->
+            </div>
+            <div class="flex justify-end pt-2 border-t border-gray-100">
+                <button onclick="closeWorkspace()" class="px-3 py-1.5 bg-kiro-600 text-white rounded-lg text-xs font-medium">Close Workspace</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        lucide.createIcons();
+
+        let currentAuthTab = 'login';
+        let currentModel = 'Kiro 3.5 Flash';
+        let currentMode = 'standard';
+        let sidebarOpen = true;
+        let messages = [];
+
+        // Auth Tab Switching
+        function switchAuthTab(tab) {
+            currentAuthTab = tab;
+            const tabLogin = document.getElementById('tabLogin');
+            const tabSignup = document.getElementById('tabSignup');
+            const nameField = document.getElementById('nameFieldContainer');
+            const subtitle = document.getElementById('authSubtitle');
+            const btnText = document.getElementById('authBtnText');
+
+            if (tab === 'login') {
+                tabLogin.className = "flex-1 py-1.5 rounded-md bg-white text-gray-900 shadow-sm transition-all";
+                tabSignup.className = "flex-1 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all";
+                nameField.classList.add('hidden');
+                subtitle.textContent = "Sign in to your account";
+                btnText.textContent = "Sign In";
+            } else {
+                tabSignup.className = "flex-1 py-1.5 rounded-md bg-white text-gray-900 shadow-sm transition-all";
+                tabLogin.className = "flex-1 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all";
+                nameField.classList.remove('hidden');
+                subtitle.textContent = "Create your Kiro AI account";
+                btnText.textContent = "Sign Up";
+            }
+        }
+
+        // Pure Loading System Simulation for Auth
+        function handleAuthSubmit(event) {
+            event.preventDefault();
+            const btn = document.getElementById('authSubmitBtn');
+            const loader = document.getElementById('authLoader');
+            const btnText = document.getElementById('authBtnText');
+            const nameInput = document.getElementById('authName').value;
+
+            btn.disabled = true;
+            btnText.textContent = currentAuthTab === 'login' ? 'Authenticating...' : 'Creating Account...';
+            loader.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (currentAuthTab === 'signup' && nameInput) {
+                    document.getElementById('userNameDisplay').textContent = nameInput;
+                }
+                document.getElementById('authView').classList.add('hidden');
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = currentAuthTab === 'login' ? 'Sign In' : 'Sign Up';
+            }, 1200);
+        }
+
+        function instantLogin() {
+            const btn = document.getElementById('authSubmitBtn');
+            const loader = document.getElementById('authLoader');
+            document.getElementById('authBtnText').textContent = 'Connecting...';
+            loader.classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('authView').classList.add('hidden');
+                loader.classList.add('hidden');
+            }, 800);
+        }
+
+        // Sidebar & UI Controls
+        function toggleSidebar() {
+            sidebarOpen = !sidebarOpen;
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            if (sidebarOpen) {
+                sidebar.classList.remove('w-0', 'overflow-hidden', 'border-r-0');
+                sidebar.classList.add('w-64');
+                toggleBtn.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-0', 'overflow-hidden', 'border-r-0');
+                toggleBtn.classList.remove('hidden');
+            }
+        }
+
+        function toggleModelDropdown() {
+            document.getElementById('modelDropdown').classList.toggle('hidden');
+        }
+
+        function selectModel(model) {
+            currentModel = model;
+            document.getElementById('currentModelName').textContent = model;
+            document.getElementById('modelDropdown').classList.add('hidden');
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            ['Standard', 'Deep', 'Creative'].forEach(m => {
+                const el = document.getElementById('mode' + m);
+                if (m.toLowerCase() === mode) {
+                    el.className = "px-2 py-0.5 rounded-md bg-white font-medium text-gray-800 shadow-sm";
+                } else {
+                    el.className = "px-2 py-0.5 rounded-md text-gray-600 hover:text-gray-900";
+                }
+            });
+        }
+
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Chat Messaging Logic
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            document.getElementById('welcomeState').classList.add('hidden');
+            const list = document.getElementById('messagesList');
+            list.classList.remove('hidden');
+
+            // Append User Message
+            messages.push({ sender: 'user', text: text });
+            renderMessages();
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Simulate AI Response with Grok/ChatGPT style thinking & streaming
+            setTimeout(() => {
+                let aiReply = `I have received your query regarding **"${text}"**. Utilizing the **${currentModel}** engine with **${currentMode}** mode, here is the structured output you requested.`;
+                if (currentMode === 'deep') {
+                    aiReply += `\n\n> **Deep Reasoning Steps:**\n> 1. Analyzed input context and constraints.\n> 2. Verified parameters against Gemini API key configurations.\n> 3. Synthesized optimal response blueprint.`;
+                }
+                messages.push({ sender: 'ai', text: aiReply });
+                renderMessages();
+            }, 800);
+        }
+
+        function renderMessages() {
+            const list = document.getElementById('messagesList');
+            list.innerHTML = '';
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `w-full flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`;
+                
+                if (msg.sender === 'user') {
+                    div.innerHTML = `<div class="bg-gray-100 text-gray-900 px-3.5 py-2 rounded-2xl max-w-[85%] text-xs leading-relaxed">${escapeHtml(msg.text)}</div>`;
+                } else {
+                    div.innerHTML = `
+                        <div class="flex items-start space-x-2.5 max-w-[90%]">
+                            <div class="w-6 h-6 bg-kiro-600 text-white rounded flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">K</div>
+                            <div class="space-y-1 text-xs text-gray-800 leading-relaxed bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
+                                <div>${formatMarkdown(msg.text)}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                list.appendChild(div);
+            });
+            const scrollArea = document.getElementById('chatScrollArea');
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function formatMarkdown(text) {
+            let formatted = escapeHtml(text);
+            formatted = formatted.replace(/\*\*(.*?)\*\/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\n/g, '<br>');
+            return formatted;
+        }
+
+        function newChat() {
+            messages = [];
+            document.getElementById('messagesList').innerHTML = '';
+            document.getElementById('messagesList').classList.add('hidden');
+            document.getElementById('welcomeState').classList.remove('hidden');
+        }
+
+        function switchChat(id) {
+            document.getElementById('welcomeState').classList.add('hidden');
+            document.getElementById('messagesList').classList.remove('hidden');
+            messages = [
+                { sender: 'user', text: id === 1 ? 'Python API integration' : 'UI Dashboard Wireframe' },
+                { sender: 'ai', text: `Loaded previous session #${id}. How would you like to proceed with this project?` }
+            ];
+            renderMessages();
+        }
+
+        // Modals
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+        function saveSettings() {
+            closeSettings();
+        }
+
+        function triggerNewWorkspace(type) {
+            const modal = document.getElementById('workspaceModal');
+            const title = document.getElementById('workspaceTitle');
+            const content = document.getElementById('workspaceContent');
+
+            if (type === 'flow') {
+                title.textContent = 'Kiro Flow Automation Canvas';
+                content.innerHTML = `
+                    <p class="mb-2">Manage your automated pipeline nodes and triggers:</p>
+                    <div class="space-y-2">
+                        <div class="p-2.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"><span>1. Input Listener (Webhook)</span><span class="text-green-600 font-medium">Active</span></div>
+                        <div class="p-2.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"><span>2. Gemini LLM Processing Node</span><span class="text-kiro-600 font-medium">Ready</span></div>
+                        <div class="p-2.5 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"><span>3. Output Exporter</span><span class="text-gray-400">Idle</span></div>
+                    </div>
+                `;
+            } else {
+                title.textContent = 'Vision & Document Studio';
+                content.innerHTML = `
+                    <div class="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                        <p class="text-xs font-medium text-gray-700">Drop your PDFs, charts, or images here</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Supports PNG, JPG, PDF up to 25MB</p>
+                    </div>
+                `;
+                setTimeout(() => lucide.createIcons(), 50);
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeWorkspace() {
+            document.getElementById('workspaceModal').classList.add('hidden');
+        }
+
+        function attachFile() {
+            triggerNewWorkspace('vision');
+        }
+    </script>
+</body>
+</html>
